@@ -1,9 +1,8 @@
 {
-  "name": "back",
+  "name": "online-cinema",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
+  "description": "backend part of online-cinema",
+  "author": "Igor Timonin",
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
@@ -20,8 +19,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/common": "^9.3.9",
-    "@nestjs/core": "^9.3.9",
+    "@nestjs/common": "^9.0.0",
+    "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"
