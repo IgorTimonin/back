@@ -5,14 +5,16 @@ import { compare, genSalt, hash } from 'bcryptjs';
 import { InjectModel } from 'nestjs-typegoose';
 import { UserModel } from 'src/user/user.model';
 import { AuthDto } from './dto/auth.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(UserModel) private readonly UserModel: ModelType<UserModel>
+    @InjectModel(UserModel) private readonly UserModel: ModelType<UserModel>,
+    private readonly jwtService: JwtService
   ) { }
 
-  async signin(dto: AuthDto) {
+  async login(dto: AuthDto) {
     return this.validateUser(dto)
   }
 
@@ -42,5 +44,19 @@ export class AuthService {
       throw new UnauthorizedException('Неверный пароль')
     }
     return user
+  }
+
+  async issueTokensPair(userId: string) {
+    const data = { _id: userId }
+
+    const refreshToken = await this.jwtService.signAsync(data, {
+      expiresIn: '15d'
+    })
+
+    const accessToken = await this.jwtService.signAsync(data, {
+      expiresIn: '1h'
+    })
+
+    return { refreshToken, accessToken }
   }
 }
