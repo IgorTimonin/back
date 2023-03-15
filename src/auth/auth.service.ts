@@ -6,6 +6,7 @@ import { InjectModel } from 'nestjs-typegoose';
 import { UserModel } from 'src/user/user.model';
 import { AuthDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
+import { RefreshTokenDto } from './dto/refreshToken.dto';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +16,36 @@ export class AuthService {
   ) { }
 
   async login(dto: AuthDto) {
-    return this.validateUser(dto)
+    const user = await this.validateUser(dto)
+    const tokens = await this.issueTokensPair(String(user._id))
+
+    return {
+      user: this.returnUserFields(user),
+      ...tokens
+    }
+  }
+
+  async getNewTokens({ refreshToken }: RefreshTokenDto) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Необходимо авторизироваться!')
+    }
+    try {
+      const result = await this.jwtService.verifyAsync(refreshToken)
+      if (!result) {
+        throw new UnauthorizedException('Неверный или устаревший токен!')
+      }
+
+      const user = await this.UserModel.findById(result._id)
+      const tokens = await this.issueTokensPair(String(user._id))
+
+      return {
+        user: this.returnUserFields(user),
+        ...tokens
+      }
+    }
+    catch (error) {
+      throw new UnauthorizedException('Передан неверный refresh token!')
+    }
   }
 
   async signup(dto: AuthDto) {
@@ -29,8 +59,12 @@ export class AuthService {
       email: dto.email,
       password: await hash(dto.password, salt)
     })
+    const tokens = await this.issueTokensPair(String(newUser._id))
 
-    return newUser.save()
+    return {
+      user: this.returnUserFields(newUser),
+      ...tokens
+    }
   }
 
   async validateUser(dto: AuthDto): Promise<UserModel> {
@@ -58,5 +92,13 @@ export class AuthService {
     })
 
     return { refreshToken, accessToken }
+  }
+
+  returnUserFields(user: UserModel) {
+    return {
+      _id: user._id,
+      email: user.email,
+      isAdmin: user.isAdmin
+    }
   }
 }
