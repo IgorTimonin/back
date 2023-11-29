@@ -1,6 +1,6 @@
 import { applyDecorators, UseGuards } from "@nestjs/common/decorators";
-import { OnlyAdminGuard } from "src/guards/admin.guard";
-import { JwtAuthGuard } from "src/guards/jwt.guard";
+import { OnlyAdminGuard } from "src/auth/guards/admin.guard";
+import { JwtAuthGuard } from "src/auth/guards/jwt.guard";
 import { TypeRole } from "../auth.interface";
 
 export const Auth = (role: TypeRole = 'user') =>

@@ -3,7 +3,6 @@ import { Base, TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface UserModel extends Base {}
-
 export class UserModel extends TimeStamps {
   @prop({ unique: true })
   email: string
@@ -12,7 +11,7 @@ export class UserModel extends TimeStamps {
   password: string
 
   @prop({ default: false })
-  isAdmin: boolean
+  isAdmin?: boolean
 
   @prop({ default: [] })
   favorites?: []

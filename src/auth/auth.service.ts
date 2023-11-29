@@ -64,7 +64,12 @@ export class AuthService {
     })
     const tokens = await this.issueTokensPair(String(newUser._id))
 
-    return newUser.save()
+    newUser.save()
+
+    return {
+      user: this.returnUserFields(newUser),
+      ...tokens
+    }
   }
 
   //метод проверки данных пользователя
