@@ -48,6 +48,8 @@ export class UserService {
     return
   }
 
+  // * раздел админа *
+  
   // кол-во всех пользователей
   async getCount() {
     return this.UserModel.find().count().exec()

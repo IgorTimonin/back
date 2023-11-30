@@ -25,6 +25,8 @@ export class UserController {
     return this.userService.updateProfile(_id, dto)
   }
 
+  // * раздел админа *
+  
   // обновление профиля админа
   @UsePipes(new ValidationPipe())
   @Put(':id')
@@ -34,12 +36,11 @@ export class UserController {
     return this.userService.updateProfile(id, dto)
   }
 
-  // удаление профиля по id
-  @Delete(':id')
+  // получение профиля пользователя по id
+  @Get(':id')
   @Auth('admin')
-  @HttpCode(200)
-  async deleteUser(@Param('id', IdValidationPipe) id: string,) {
-    return this.userService.deleteUser(id)
+  async getUserProfile(@Param('id', IdValidationPipe) id: string) {
+    return this.userService.byId(id)
   }
 
   // получение кол-ва пользователей
@@ -56,10 +57,11 @@ export class UserController {
     return this.userService.getAllUsers(searchTerm)
   }
 
-  // получение профиля пользователя по id
-  @Get(':id')
+  // удаление профиля по id
+  @Delete(':id')
   @Auth('admin')
-  async getUserProfile(@Param('id', IdValidationPipe) id: string) {
-    return this.userService.byId(id)
+  @HttpCode(200)
+  async deleteUser(@Param('id', IdValidationPipe) id: string,) {
+    return this.userService.deleteUser(id)
   }
 }
