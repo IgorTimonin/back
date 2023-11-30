@@ -9,6 +9,7 @@ import { genSalt, hash } from 'bcryptjs';
 export class UserService {
   constructor(@InjectModel(UserModel) private readonly UserModel: ModelType<UserModel>) { }
 
+  // поиск пользователя по id
   async byId(_id: string) {
     const user = await this.UserModel.findById(_id)
     if (!user) {
@@ -24,6 +25,7 @@ export class UserService {
     // }
   }
 
+  // обновление данных пользователя
   async updateProfile(_id: string, dto: UpdateUserDto) {
     const user = await this.byId(_id)
     const isSameUser = await this.UserModel.findOne({ email: dto.email })
@@ -44,5 +46,33 @@ export class UserService {
 
     await user.save()
     return
+  }
+
+  // кол-во всех пользователей
+  async getCount() {
+    return this.UserModel.find().count().exec()
+  }
+
+  // получение всех профилей пользователей
+  async getAllUsers(searchTerm?: string) {
+    let options = {}
+
+    if (searchTerm) {
+      options = {
+        $or: [
+          {
+            email: new RegExp(searchTerm, 'i')
+          }
+        ]
+      }
+    }
+    return this.UserModel.find(options).select('-password -updatedAt -__v').sort({
+      createdAt: 'desc'
+    }).exec()
+  }
+
+  // удаление пользователя
+  async deleteUser(id: string) {
+    return this.UserModel.findByIdAndDelete(id).exec()
   }
 }

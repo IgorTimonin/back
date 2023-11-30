@@ -15,7 +15,7 @@ export class AuthService {
     private readonly jwtService: JwtService
   ) { }
 
-  //авторизация пользователя
+  // авторизация пользователя
   async login(dto: AuthDto) {
     const user = await this.validateUser(dto)
     const tokens = await this.issueTokensPair(String(user._id))
@@ -26,7 +26,7 @@ export class AuthService {
     }
   }
 
-  //обновление пары токенов
+  // обновление пары токенов
   async getNewTokens({ refreshToken }: RefreshTokenDto) {
     if (!refreshToken) {
       throw new UnauthorizedException('Необходимо авторизироваться!')
@@ -50,7 +50,7 @@ export class AuthService {
     }
   }
 
-  //регистрация нового пользователя
+  // регистрация нового пользователя
   async signup(dto: AuthDto) {
     const existingUser = await this.UserModel.findOne({ email: dto.email })
     if (existingUser) {
@@ -62,17 +62,17 @@ export class AuthService {
       email: dto.email,
       password: await hash(dto.password, salt)
     })
-    const tokens = await this.issueTokensPair(String(newUser._id))
 
-    newUser.save()
+    const user = await newUser.save()
+    const tokens = await this.issueTokensPair(String(user._id))
 
     return {
-      user: this.returnUserFields(newUser),
+      user: this.returnUserFields(user),
       ...tokens
     }
   }
 
-  //метод проверки данных пользователя
+  // метод проверки данных пользователя
   async validateUser(dto: AuthDto): Promise<UserModel> {
     const user = await this.UserModel.findOne({ email: dto.email })
     if (!user) {
@@ -86,7 +86,7 @@ export class AuthService {
     return user
   }
 
-  //создание пары токенов
+  // создание пары токенов
   async issueTokensPair(userId: string) {
     const data = { _id: userId }
 
@@ -101,7 +101,7 @@ export class AuthService {
     return { refreshToken, accessToken }
   }
 
-  //данные пользователя, возвращаемые при регистрации/авторизации 
+  // данные пользователя, возвращаемые при регистрации/авторизации 
   returnUserFields(user: UserModel) {
     return {
       _id: user._id,
