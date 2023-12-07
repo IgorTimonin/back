@@ -1,3 +1,9 @@
+## Задачи:
+
+1) Описать ошибку БД при попытке создать запись с дублем в поле с уникальными данными (uniq)
+ERROR [ExceptionsHandler] E11000 duplicate key error collection: online-cinema.Actor index: slug_1 dup key: { slug: "" }
+2) Обработать ситуации, когда в ответе приходит пустой массив (неверно указан id  в запросе к api)
+
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
