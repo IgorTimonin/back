@@ -13,22 +13,23 @@ export class MovieService {
   // поиск по полю slug
   async bySlug(slug: string) {
     const docs = await this.MovieModel.findOne({ slug }).populate('actors genres').exec()
-    if (!docs) throw new NotFoundException('Фильмы не найден')
+    if (!docs) throw new NotFoundException('По этому запросу фильмы не найдены')
     return docs
   }
 
   // поиск по актёру
   async byActor(actorId: Types.ObjectId) {
-    const docs = await this.MovieModel.find({ actors: actorId }).exec()
-    if (!docs) throw new NotFoundException('Фильмы не найден')
+    const docs = await this.MovieModel.find({ actors: actorId }).populate('actors genres').exec()
+    if (!docs) throw new NotFoundException('Фильмы c этим актёром не найдены')
+    if (docs.length === 0) throw new NotFoundException('Фильмов c этим актёром нет в базе или передан неверный id актёра')
     return docs
   }
 
   // поиск по полю жанру
   async byGenres(genresId: Types.ObjectId[]) {
-    const docs = await this.MovieModel.find({ genres: { $in: genresId } }).exec()
-    if (!docs) throw new NotFoundException('Фильмы не найден')
-    // if (docs.length = 0) throw new NotFoundException('Фильмы не найден')
+    const docs = await this.MovieModel.find({ genres: { $in: genresId } }).populate('actors genres').exec()
+    if (!docs) throw new NotFoundException('Фильмов этого жанра нет в базе')
+    if (docs.length === 0) throw new NotFoundException('Фильмов этого жанра нет в базе или передан неверный id жанра')
     return docs
   }
 
@@ -67,6 +68,12 @@ export class MovieService {
   // получение самых популярных фильмов
   async getMostPopular() {
     return this.MovieModel.find({ countOpened: { $gt: 0 } }).sort({ countOpened: -1 }).populate('genres').exec()
+  }
+
+  // обновление рейтинга фильма
+  async updateRating(id: Types.ObjectId, newRating: number) {
+    return this.MovieModel.findByIdAndUpdate(id, { rating: newRating }, { new: true })
+    .exec()
   }
 
   // * раздел админа *

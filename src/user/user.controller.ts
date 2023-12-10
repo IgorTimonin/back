@@ -4,6 +4,8 @@ import { IdValidationPipe } from 'src/pipes/id.validation.pipe';
 import { User } from './decorators/user.decorator';
 import { UpdateUserDto } from './dto/updateUserDto';
 import { UserService } from './user.service';
+import { Types } from 'mongoose';
+import { UserModel } from './user.model';
 
 @Controller('users')
 export class UserController {
@@ -24,6 +26,24 @@ export class UserController {
   async updateProfile(@User('_id') _id: string, @Body() dto: UpdateUserDto) {
     return this.userService.updateProfile(_id, dto)
   }
+
+  // получение избранного
+  @Get('profile/favorites')
+  @Auth()
+  async getFavorites(@User('_id') _id: Types.ObjectId) {
+    return this.userService.getFavoritesMovies(_id)
+  }
+
+  // добавление\удаление в избранное 
+  @Put('profile/favorites')
+  @Auth()
+  @HttpCode(200)
+  async updateFavorites(
+    @User() user: UserModel,
+    @Body('movieId', IdValidationPipe) movieId: Types.ObjectId) {
+    return this.userService.toggleFavorite(movieId, user)
+  }
+
 
   // * раздел админа *
   
