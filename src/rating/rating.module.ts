@@ -19,7 +19,6 @@ import { MovieModule } from 'src/movie/movie.module';
   ],
   controllers: [RatingController],
   providers: [RatingService],
-
   exports: [RatingService],
 })
 export class RatingModule { }

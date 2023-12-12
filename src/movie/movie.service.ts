@@ -4,11 +4,14 @@ import { InjectModel } from 'nestjs-typegoose';
 import { CreateMovieDto } from './dto/createMovie.dto';
 import { MovieModel } from './movie.model';
 import { Types } from 'mongoose';
+import { TelegramService } from 'src/telegram/telegram.service'
 
 @Injectable()
 export class MovieService {
   constructor(
-    @InjectModel(MovieModel) private readonly MovieModel: ModelType<MovieModel>) { }
+    @InjectModel(MovieModel)
+    private readonly MovieModel: ModelType<MovieModel>,
+    private readonly telegramService: TelegramService) { }
 
   // поиск по полю slug
   async bySlug(slug: string) {
@@ -73,7 +76,7 @@ export class MovieService {
   // обновление рейтинга фильма
   async updateRating(id: Types.ObjectId, newRating: number) {
     return this.MovieModel.findByIdAndUpdate(id, { rating: newRating }, { new: true })
-    .exec()
+      .exec()
   }
 
   // * раздел админа *
@@ -105,6 +108,11 @@ export class MovieService {
 
   // обновление фильма
   async update(_id: string, dto: CreateMovieDto) {
+    if (!dto.isSendTelegram) {
+      await this.sendNotification(dto)
+      dto.isSendTelegram = true
+    }
+
     const updateItem = await this.MovieModel.findByIdAndUpdate(_id, dto, {
       new: true,
     }).exec()
@@ -118,5 +126,27 @@ export class MovieService {
     const deleteItem = this.MovieModel.findByIdAndDelete(id).exec()
     if (!deleteItem) throw new NotFoundException('Фильм не найден')
     return deleteItem
+  }
+
+
+  // отправка уведомлений в telegram
+  async sendNotification(dto: CreateMovieDto) {
+    // if (process.env.NODE_ENV !== 'development')
+    // await this.TelegramService.sendMessage(dto.poster)
+    await this.telegramService.sendPic('https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/106d6805-df6f-4a45-ad2a-4d1152ff2fe3/1920x')
+    const msg = `<b>${dto.title}</b>`
+
+    await this.telegramService.sendMessage(msg, {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              url: 'https://okko.tv/movie/avatar',
+              text: '\ud83d\udcfd Начать просмотр \ud83c\udf7f',
+            },
+          ],
+        ],
+      },
+    })
   }
 }
