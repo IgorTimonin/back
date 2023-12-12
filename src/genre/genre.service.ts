@@ -3,11 +3,15 @@ import { GenreModel } from './genre.model';
 import { ModelType } from '@typegoose/typegoose/lib/types';
 import { InjectModel } from 'nestjs-typegoose';
 import { CreateGenreDto } from './dto/createGenre.dto';
+import { MovieService } from 'src/movie/movie.service';
+import { Collection } from './genre.interface';
 
 @Injectable()
 export class GenreService {
   constructor(
-    @InjectModel(GenreModel) private readonly GenreModel: ModelType<GenreModel>
+    @InjectModel(GenreModel)
+    private readonly GenreModel: ModelType<GenreModel>,
+    private readonly movieService: MovieService
   ) { }
 
   // поиск по полю slug
@@ -42,11 +46,21 @@ export class GenreService {
     }).exec()
   }
 
-  // получение соллекчий жанров
+  // получение коллекций жанров
   async getCollections() {
     const genres = await this.getAll()
-    const collections = genres
-    // some code
+    const collections = await Promise.all(genres.map(async (genre) => {
+      const moviesByGenre = await this.movieService.byGenres([genre._id])
+
+      const result: Collection = {
+        _id: String(genre._id),
+        image: moviesByGenre[0].bigPoster ? moviesByGenre[0].bigPoster : '/back/uploads/no_icon.png',
+        title: genre.slug,
+        slug: genre.name
+      }
+
+      return result
+    }))
     return collections
   }
 
